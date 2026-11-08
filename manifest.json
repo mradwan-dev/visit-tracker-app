@@ -1,0 +1,12 @@
+{
+  "name": "نظام تتبع الزيارات",
+  "short_name": "تتبع الزيارات",
+  "description": "تطبيق تسجيل زيارات المندوبين الميدانيين",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl"
+}
