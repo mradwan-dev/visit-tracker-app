@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>نظام تتبع الزيارات | Visit Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-dark: #0284c7;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --radius: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 20px 16px;
+      padding-top: max(20px, env(safe-area-inset-top));
+      animation: fadeIn 0.3s ease;
+    }
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .app-header h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .app-header .badge {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .icon {
+      width: 22px;
+      height: 22px;
+      background: rgba(14,165,233,0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .form-group label .required {
+      color: var(--danger);
+      margin-right: 4px;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      color: var(--text);
+      font-family: inherit;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14,165,233,0.2);
+    }
+    input.error, select.error, textarea.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+    }
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.78rem;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.show {
+      display: block;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chip {
+      position: relative;
+    }
+    .chip input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .chip label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 0;
+    }
+    .chip input:checked + label {
+      background: rgba(14,165,233,0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .photo-area {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      background: #0f172a;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-area:active {
+      transform: scale(0.98);
+    }
+    .photo-area.has-image {
+      border-style: solid;
+      border-color: var(--success);
+      padding: 0;
+    }
+    .photo-area img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+      border-radius: 14px;
+    }
+    .photo-placeholder {
+      color: var(--text-muted);
+    }
+    .photo-placeholder .camera-icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .photo-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      justify-content: center;
+    }
+    .btn-small {
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-retake {
+      background: var(--card-hover);
+      color: var(--text);
+    }
+    .btn-remove {
+      background: rgba(239,68,68,0.15);
+      color: var(--danger);
+    }
+
+    .location-box {
+      background: #0f172a;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .location-box .loc-icon {
+      font-size: 1.4rem;
+    }
+    .location-box .loc-text {
+      flex: 1;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .location-box .loc-text strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+    .btn-loc {
+      background: rgba(14,165,233,0.15);
+      color: var(--primary);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: inherit;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: white;
+      box-shadow: 0 8px 24px rgba(14,165,233,0.35);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+
+    .success-screen {
+      text-align: center;
+      padding-top: 60px;
+    }
+    .success-icon {
+      width: 90px;
+      height: 90px;
+      background: rgba(16,185,129,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      margin: 0 auto 24px;
+      animation: scaleIn 0.4s ease;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-screen h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .success-screen p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .welcome {
+      text-align: center;
+      padding-top: 40px;
+    }
+    .welcome .logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 20px;
+      box-shadow: 0 12px 32px rgba(14,165,233,0.3);
+    }
+    .welcome h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .welcome p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .overlay.active {
+      display: flex;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--card);
+      color: var(--text);
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      z-index: 1100;
+      transition: transform 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.error {
+      border-color: var(--danger);
+      color: #fca5a5;
+    }
+    .toast.success {
+      border-color: var(--success);
+      color: #6ee7b7;
+    }
+
+    #photoInput {
+      display: none;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 24px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SCREEN 1: Welcome -->
+  <div id="screen-welcome" class="screen active">
+    <div class="welcome">
+      <div class="logo">📍</div>
+      <h1>نظام تتبع الزيارات</h1>
+      <p>سجّل زياراتك اليومية بسهولة<br>مع الصور والموقع والتحصيل</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">👤</span>
+        بيانات المندوب
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> اسم المندوب</label>
+        <select id="mandoubName" required>
+          <option value="">اختر اسمك</option>
+          <option value="أحمد محمد">أحمد محمد</option>
+          <option value="خالد علي">خالد علي</option>
+          <option value="سعيد عبدالله">سعيد عبدالله</option>
+          <option value="يوسف حسن">يوسف حسن</option>
+          <option value="آخر">آخر (اكتب الاسم)</option>
+        </select>
+        <div class="error-msg" id="err-mandoubName">يجب اختيار اسم المندوب</div>
+      </div>
+
+      <div class="form-group" id="customNameGroup" style="display:none;">
+        <label><span class="required">*</span> الاسم الكامل</label>
+        <input type="text" id="customName" placeholder="اكتب اسمك الكامل" />
+        <div class="error-msg" id="err-customName">الاسم مطلوب</div>
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> رقم هاتف المندوب</label>
+        <input type="tel" id="mandoubPhone" placeholder="9xxxxxxx" maxlength="8" inputmode="numeric" />
+        <div class="error-msg" id="err-mandoubPhone">رقم الهاتف يجب أن يكون 8 أرقام ويبدأ بـ 9 أو 7</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="startApp()">
+      بدء تسجيل الزيارات ←
+    </button>
+
+    <p class="footer-note">الإصدار 1.0 • بياناتك تُحفظ فور الإرسال</p>
+  </div>
+
+  <!-- SCREEN 2: Form -->
+  <div id="screen-form" class="screen">
+    <div class="app-header">
+      <h1>زيارة جديدة</h1>
+      <div class="badge" id="mandoubBadge">المندوب</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🏪</span>
+        بيانات العميل / المحل
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> كود الزبون</label>
+        <input type="text" id="clientCode" placeholder="مثال: C-1024" />
+        <div class="error-msg" id="err-clientCode">كود الزبون مطلوب</div>
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> اسم العميل / المحل</label>
+        <input type="text" id="clientName" placeholder="اسم المحل أو العميل" />
+        <div class="error-msg" id="err-clientName">اسم العميل مطلوب</div>
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> رقم هاتف العميل</label>
+        <input type="tel" id="clientPhone" placeholder="9xxxxxxx" maxlength="8" inputmode="numeric" />
+        <div class="error-msg" id="err-clientPhone">رقم هاتف صحيح مطلوب (8 أرقام)</div>
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> هل الزبون جديد؟</label>
+        <div class="chips">
+          <div class="chip">
+            <input type="radio" name="isNew" id="newYes" value="نعم" />
+            <label for="newYes">نعم</label>
+          </div>
+          <div class="chip">
+            <input type="radio" name="isNew" id="newNo" value="لا" checked />
+            <label for="newNo">لا</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">📋</span>
+        نوع الزيارة
+      </div>
+      <div class="form-group">
+        <label><span class="required">*</span> اختر نوع أو أكثر</label>
+        <div class="chips" id="visitTypes">
+          <div class="chip">
+            <input type="checkbox" id="type1" value="زيارة عادية" />
+            <label for="type1">زيارة عادية</label>
+          </div>
+          <div class="chip">
+            <input type="checkbox" id="type2" value="تفقد بضاعة" />
+            <label for="type2">تفقد بضاعة</label>
+          </div>
+          <div class="chip">
+            <input type="checkbox" id="type3" value="تحصيل دين" />
+            <label for="type3">تحصيل دين</label>
+          </div>
+          <div class="chip">
+            <input type="checkbox" id="type4" value="طلب احتياج" />
+            <label for="type4">طلب احتياج</label>
+          </div>
+          <div class="chip">
+            <input type="checkbox" id="type5" value="استلام أوردر" />
+            <label for="type5">استلام أوردر</label>
+          </div>
+        </div>
+        <div class="error-msg" id="err-visitTypes">يجب اختيار نوع زيارة واحد على الأقل</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">🛒</span>
+        الأوردرات والتحصيل
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> هل تم جلب أوردر؟</label>
+        <div class="chips">
+          <div class="chip">
+            <input type="radio" name="hasOrder" id="orderYes" value="نعم" onchange="toggleOrderFields()" />
+            <label for="orderYes">نعم</label>
+          </div>
+          <div class="chip">
+            <input type="radio" name="hasOrder" id="orderNo" value="لا" checked onchange="toggleOrderFields()" />
+            <label for="orderNo">لا</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="orderFields" style="display:none;">
+        <div class="form-group">
+          <label><span class="required">*</span> عدد الأوردرات</label>
+          <input type="number" id="orderCount" min="1" placeholder="1" />
+          <div class="error-msg" id="err-orderCount">أدخل عدد الأوردرات</div>
+        </div>
+        <div class="form-group">
+          <label>قيمة الأوردرات (ر.ع)</label>
+          <input type="number" id="orderValue" min="0" step="0.001" placeholder="0.000" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> هل تم تحصيل مبلغ؟</label>
+        <div class="chips">
+          <div class="chip">
+            <input type="radio" name="hasCollection" id="colYes" value="نعم" onchange="toggleCollectionFields()" />
+            <label for="colYes">نعم</label>
+          </div>
+          <div class="chip">
+            <input type="radio" name="hasCollection" id="colNo" value="لا" checked onchange="toggleCollectionFields()" />
+            <label for="colNo">لا</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="collectionFields" style="display:none;">
+        <div class="form-group">
+          <label><span class="required">*</span> مبلغ التحصيل (ر.ع)</label>
+          <input type="number" id="collectionAmount" min="0" step="0.001" placeholder="0.000" />
+          <div class="error-msg" id="err-collectionAmount">أدخل مبلغ التحصيل</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">📍</span>
+        الموقع والصورة
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> الموقع الحالي</label>
+        <div class="location-box">
+          <div class="loc-icon">📡</div>
+          <div class="loc-text" id="locationText">
+            <strong>لم يتم تحديد الموقع بعد</strong>
+            اضغط للحصول على الموقع بدقة
+          </div>
+          <button type="button" class="btn-loc" onclick="getLocation()">تحديد</button>
+        </div>
+        <div class="error-msg" id="err-location">يجب تحديد الموقع</div>
+        <input type="hidden" id="latitude" />
+        <input type="hidden" id="longitude" />
+        <input type="hidden" id="locationLink" />
+      </div>
+
+      <div class="form-group">
+        <label>المنطقة / الحي</label>
+        <input type="text" id="area" placeholder="مثال: الخوض، المعبيلة، الغبرة..." />
+      </div>
+
+      <div class="form-group">
+        <label><span class="required">*</span> صورة المحل / الواجهة</label>
+        <div class="photo-area" id="photoArea" onclick="document.getElementById('photoInput').click()">
+          <div class="photo-placeholder" id="photoPlaceholder">
+            <div class="camera-icon">📷</div>
+            <div>اضغط لالتقاط أو اختيار صورة</div>
+            <div style="font-size:0.8rem;margin-top:6px;opacity:0.7;">يفضل صورة واضحة لواجهة المحل</div>
+          </div>
+          <img id="photoPreview" style="display:none;" alt="صورة المحل" />
+        </div>
+        <div class="photo-actions" id="photoActions" style="display:none;">
+          <button type="button" class="btn-small btn-retake" onclick="document.getElementById('photoInput').click()">إعادة التقاط</button>
+          <button type="button" class="btn-small btn-remove" onclick="removePhoto()">حذف</button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" />
+        <div class="error-msg" id="err-photo">صورة المحل مطلوبة</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon">📝</span>
+        ملاحظات ومصروف
+      </div>
+
+      <div class="form-group">
+        <label>ملاحظات إضافية</label>
+        <textarea id="notes" rows="3" placeholder="أي ملاحظات مهمة عن الزيارة..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>مصروف البنزين اليوم (ر.ع) — اختياري</label>
+        <input type="number" id="fuelCost" min="0" step="0.001" placeholder="0.000" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="submitBtn" onclick="submitVisit()">
+      إرسال تقرير الزيارة ✓
+    </button>
+
+    <button class="btn btn-outline" style="margin-top:12px;" onclick="goToWelcome()">
+      رجوع
+    </button>
+
+    <p class="footer-note">جميع الحقول المميزة بـ * إجبارية</p>
+  </div>
+
+  <!-- SCREEN 3: Success -->
+  <div id="screen-success" class="screen">
+    <div class="success-screen">
+      <div class="success-icon">✅</div>
+      <h2>تم الإرسال بنجاح</h2>
+      <p>تم تسجيل الزيارة وإرسالها فورًا.<br>يمكنك تسجيل زيارة أخرى الآن.</p>
+
+      <button class="btn btn-success" onclick="newVisit()">
+        تسجيل زيارة جديدة
+      </button>
+      <button class="btn btn-outline" style="margin-top:12px;" onclick="goToWelcome()">
+        تغيير المندوب
+      </button>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentMandoub = "";
+    let currentMandoubPhone = "";
+    let photoBase64 = null;
+    let locationData = null;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function startApp() {
+      const nameSelect = document.getElementById('mandoubName').value;
+      const customName = document.getElementById('customName').value.trim();
+      const phone = document.getElementById('mandoubPhone').value.trim();
+
+      clearErrors(['mandoubName', 'customName', 'mandoubPhone']);
+
+      let valid = true;
+
+      if (!nameSelect) {
+        showError('mandoubName');
+        valid = false;
+      }
+      if (nameSelect === 'آخر' && !customName) {
+        showError('customName');
+        valid = false;
+      }
+      if (!isValidOmaniPhone(phone)) {
+        showError('mandoubPhone');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      currentMandoub = nameSelect === 'آخر' ? customName : nameSelect;
+      currentMandoubPhone = phone;
+
+      document.getElementById('mandoubBadge').textContent = currentMandoub;
+      resetForm();
+      showScreen('screen-form');
+    }
+
+    function goToWelcome() {
+      showScreen('screen-welcome');
+    }
+
+    function newVisit() {
+      resetForm();
+      showScreen('screen-form');
+    }
+
+    function isValidOmaniPhone(phone) {
+      return /^(9|7)\d{7}$/.test(phone);
+    }
+
+    function showError(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('error');
+      const err = document.getElementById('err-' + id);
+      if (err) err.classList.add('show');
+    }
+
+    function clearErrors(ids) {
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('error');
+        const err = document.getElementById('err-' + id);
+        if (err) err.classList.remove('show');
+      });
+    }
+
+    function showToast(msg, type = '') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    document.getElementById('mandoubName').addEventListener('change', function() {
+      document.getElementById('customNameGroup').style.display = this.value === 'آخر' ? 'block' : 'none';
+    });
+
+    function toggleOrderFields() {
+      const show = document.getElementById('orderYes').checked;
+      document.getElementById('orderFields').style.display = show ? 'block' : 'none';
+    }
+    function toggleCollectionFields() {
+      const show = document.getElementById('colYes').checked;
+      document.getElementById('collectionFields').style.display = show ? 'block' : 'none';
+    }
+
+    function getLocation() {
+      if (!navigator.geolocation) {
+        showToast('المتصفح لا يدعم تحديد الموقع', 'error');
+        return;
+      }
+
+      document.getElementById('locationText').innerHTML = '<strong>جاري التحديد...</strong>يرجى الانتظار';
+      
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          const accuracy = Math.round(pos.coords.accuracy);
+
+          locationData = { lat, lng, accuracy };
+          document.getElementById('latitude').value = lat;
+          document.getElementById('longitude').value = lng;
+          document.getElementById('locationLink').value = `https://maps.google.com/?q=${lat},${lng}`;
+
+          document.getElementById('locationText').innerHTML = `
+            <strong>تم التحديد بنجاح ✓</strong>
+            ${lat}, ${lng} (±${accuracy}م)
+          `;
+          clearErrors(['location']);
+          showToast('تم تحديد الموقع بدقة', 'success');
+        },
+        (err) => {
+          document.getElementById('locationText').innerHTML = `
+            <strong>فشل التحديد</strong>
+            تأكد من تفعيل الـ GPS والسماح بالوصول
+          `;
+          showToast('تعذر الحصول على الموقع', 'error');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('الملف يجب أن يكون صورة', 'error');
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        showToast('حجم الصورة كبير جدًا (الحد 8 ميجا)', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        photoBase64 = ev.target.result;
+        const preview = document.getElementById('photoPreview');
+        preview.src = photoBase64;
+        preview.style.display = 'block';
+        document.getElementById('photoPlaceholder').style.display = 'none';
+        document.getElementById('photoArea').classList.add('has-image');
+        document.getElementById('photoActions').style.display = 'flex';
+        clearErrors(['photo']);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function removePhoto() {
+      photoBase64 = null;
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoPlaceholder').style.display = 'block';
+      document.getElementById('photoArea').classList.remove('has-image');
+      document.getElementById('photoActions').style.display = 'none';
+      document.getElementById('photoInput').value = '';
+    }
+
+    function resetForm() {
+      document.getElementById('clientCode').value = '';
+      document.getElementById('clientName').value = '';
+      document.getElementById('clientPhone').value = '';
+      document.getElementById('newNo').checked = true;
+      document.querySelectorAll('#visitTypes input').forEach(c => c.checked = false);
+      document.getElementById('orderNo').checked = true;
+      document.getElementById('colNo').checked = true;
+      toggleOrderFields();
+      toggleCollectionFields();
+      document.getElementById('orderCount').value = '';
+      document.getElementById('orderValue').value = '';
+      document.getElementById('collectionAmount').value = '';
+      document.getElementById('area').value = '';
+      document.getElementById('notes').value = '';
+      document.getElementById('fuelCost').value = '';
+      removePhoto();
+      locationData = null;
+      document.getElementById('latitude').value = '';
+      document.getElementById('longitude').value = '';
+      document.getElementById('locationLink').value = '';
+      document.getElementById('locationText').innerHTML = `
+        <strong>لم يتم تحديد الموقع بعد</strong>
+        اضغط للحصول على الموقع بدقة
+      `;
+      document.querySelectorAll('.error').forEach(e => e.classList.remove('error'));
+      document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+    }
+
+    function submitVisit() {
+      const clientCode = document.getElementById('clientCode').value.trim();
+      const clientName = document.getElementById('clientName').value.trim();
+      const clientPhone = document.getElementById('clientPhone').value.trim();
+      const isNew = document.querySelector('input[name="isNew"]:checked').value;
+      const visitTypes = Array.from(document.querySelectorAll('#visitTypes input:checked')).map(c => c.value);
+      const hasOrder = document.querySelector('input[name="hasOrder"]:checked').value;
+      const orderCount = document.getElementById('orderCount').value;
+      const orderValue = document.getElementById('orderValue').value;
+      const hasCollection = document.querySelector('input[name="hasCollection"]:checked').value;
+      const collectionAmount = document.getElementById('collectionAmount').value;
+      const area = document.getElementById('area').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+      const fuelCost = document.getElementById('fuelCost').value;
+
+      let valid = true;
+      clearErrors(['clientCode','clientName','clientPhone','visitTypes','orderCount','collectionAmount','location','photo']);
+
+      if (!clientCode) { showError('clientCode'); valid = false; }
+      if (!clientName) { showError('clientName'); valid = false; }
+      if (!isValidOmaniPhone(clientPhone)) { showError('clientPhone'); valid = false; }
+      if (visitTypes.length === 0) { showError('visitTypes'); valid = false; }
+      if (hasOrder === 'نعم' && (!orderCount || orderCount < 1)) { showError('orderCount'); valid = false; }
+      if (hasCollection === 'نعم' && (!collectionAmount || collectionAmount <= 0)) { showError('collectionAmount'); valid = false; }
+      if (!locationData) { showError('location'); valid = false; }
+      if (!photoBase64) { showError('photo'); valid = false; }
+
+      if (!valid) {
+        showToast('يرجى إكمال جميع الحقول الإجبارية', 'error');
+        return;
+      }
+
+      const payload = {
+        timestamp: new Date().toISOString(),
+        date: new Date().toLocaleDateString('ar-OM'),
+        time: new Date().toLocaleTimeString('ar-OM', { hour: '2-digit', minute: '2-digit' }),
+        mandoubName: currentMandoub,
+        mandoubPhone: currentMandoubPhone,
+        clientCode,
+        clientName,
+        clientPhone,
+        isNew,
+        visitTypes: visitTypes.join(' | '),
+        hasOrder,
+        orderCount: hasOrder === 'نعم' ? orderCount : '',
+        orderValue: hasOrder === 'نعم' ? orderValue : '',
+        hasCollection,
+        collectionAmount: hasCollection === 'نعم' ? collectionAmount : '',
+        latitude: locationData.lat,
+        longitude: locationData.lng,
+        locationLink: document.getElementById('locationLink').value,
+        area,
+        notes,
+        fuelCost,
+        photo: photoBase64
+      };
+
+      document.getElementById('overlay').classList.add('active');
+
+      // For production, replace with your Google Apps Script Web App URL
+      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+      // Local backup always
+      try {
+        const key = 'visits_backup';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(payload);
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch (e) {}
+
+      // Attempt real-time send
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).finally(() => {
+        setTimeout(() => {
+          document.getElementById('overlay').classList.remove('active');
+          showScreen('screen-success');
+        }, 900);
+      });
+    }
+
+    document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
+  </script>
+</body>
+</html>
